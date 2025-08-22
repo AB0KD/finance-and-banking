@@ -48,12 +48,12 @@
                             <label for="maxUses">الحد الأقصى للمشاهدات (0 = غير محدود)</label>
                             <input type="number" id="maxUses" name="maxUses" min="0" value="10">
                         </div>
-                        <button type="submit" class="upload-btn">إنشاء رابط</button>
+                        <button type="submit" class="btn btn-primary">إنشاء رابط</button>
                     </form>
-                    <div id="shareLinkContainer" style="display: none; margin-top: 15px;">
+                    <div id="shareLinkContainer" class="share-link-container" style="display: none;">
                         <p>رابط المشاركة:</p>
-                        <input type="text" id="shareLink" readonly style="width: 100%; padding: 8px; margin: 5px 0;">
-                        <button id="copyLinkBtn" class="upload-btn" style="background: #2ecc71;">نسخ الرابط</button>
+                        <input type="text" id="shareLink" readonly>
+                        <button id="copyLinkBtn" class="btn btn-success">نسخ الرابط</button>
                     </div>
                 </div>
                 
@@ -76,7 +76,7 @@
                             <label for="fileName" data-key="fileName">اسم الملف (اختياري)</label>
                             <input type="text" id="fileName" name="fileName" placeholder="اسم الملف المعروض">
                         </div>
-                        <button type="submit" class="upload-btn" data-key="uploadButton">رفع</button>
+                        <button type="submit" class="btn btn-primary" data-key="uploadButton">رفع</button>
                     </form>
                 </div>
                 
@@ -91,7 +91,7 @@
                             <label for="imageName" data-key="imageName">اسم الصورة (اختياري)</label>
                             <input type="text" id="imageName" name="imageName" placeholder="اسم الصورة المعروضة">
                         </div>
-                        <button type="submit" class="upload-btn" data-key="uploadButton">رفع</button>
+                        <button type="submit" class="btn btn-primary" data-key="uploadButton">رفع</button>
                     </form>
                 </div>
                 
@@ -204,7 +204,7 @@
             const activeLinks = links.filter(link => now < link.expiry && (link.maxUses === 0 || link.usedCount < link.maxUses));
             
             if (activeLinks.length === 0) {
-                linksContainer.innerHTML = '<p>لا توجد روابط مشاركة نشطة</p>';
+                linksContainer.innerHTML = '<p class="no-items">لا توجد روابط مشاركة نشطة</p>';
                 return;
             }
             
@@ -221,8 +221,8 @@
                     <div class="item-size">ينتهي في: ${expiryDate.toLocaleDateString()}</div>
                     <div class="item-size">تم استخدامه: ${link.usedCount} ${link.maxUses > 0 ? 'من ' + link.maxUses : ''}</div>
                     <div class="item-actions">
-                        <button class="view" data-token="${link.token}">عرض الرابط</button>
-                        <button class="delete" data-token="${link.token}">حذف</button>
+                        <button class="btn btn-sm btn-primary view" data-token="${link.token}">عرض الرابط</button>
+                        <button class="btn btn-sm btn-danger delete" data-token="${link.token}">حذف</button>
                     </div>
                 `;
                 linksContainer.appendChild(linkElement);
@@ -305,8 +305,8 @@
                     <div class="item-name">${file.name}</div>
                     <div class="item-size">${file.size} - ${file.type}</div>
                     <div class="item-actions">
-                        <button class="download" data-key="download" data-file-index="${index}">تحميل</button>
-                        <button class="delete" data-key="delete" data-file-index="${index}">حذف</button>
+                        <button class="btn btn-sm btn-primary download" data-key="download" data-file-index="${index}">تحميل</button>
+                        <button class="btn btn-sm btn-danger delete" data-key="delete" data-file-index="${index}">حذف</button>
                     </div>
                 `;
                 filesContainer.appendChild(fileElement);
@@ -324,8 +324,8 @@
                         <img src="${image.data}" alt="${image.name}" style="max-width: 100%; max-height: 100px; margin-top: 10px;">
                     </div>
                     <div class="item-actions">
-                        <button class="download" data-key="download" data-image-index="${index}">تحميل</button>
-                        <button class="delete" data-key="delete" data-image-index="${index}">حذف</button>
+                        <button class="btn btn-sm btn-primary download" data-key="download" data-image-index="${index}">تحميل</button>
+                        <button class="btn btn-sm btn-danger delete" data-key="delete" data-image-index="${index}">حذف</button>
                     </div>
                 `;
                 imagesContainer.appendChild(imageElement);
@@ -555,42 +555,31 @@
             document.getElementById('copyLinkBtn').addEventListener('click', function() {
                 const shareLinkInput = document.getElementById('shareLink');
                 shareLinkInput.select();
-                document.execCommand('copy');
                 
-                alert(localStorage.getItem('language') === 'en' 
-                    ? 'Link copied to clipboard' 
-                    : 'تم نسخ الرابط إلى الحافظة');
+                // استخدام Clipboard API الحديث إذا كان متاحاً
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(shareLinkInput.value)
+                        .then(() => {
+                            alert(localStorage.getItem('language') === 'en' 
+                                ? 'Link copied to clipboard' 
+                                : 'تم نسخ الرابط إلى الحافظة');
+                        })
+                        .catch(err => {
+                            // Fallback إلى الطريقة القديمة
+                            document.execCommand('copy');
+                            alert(localStorage.getItem('language') === 'en' 
+                                ? 'Link copied to clipboard' 
+                                : 'تم نسخ الرابط إلى الحافظة');
+                        });
+                } else {
+                    // Fallback إلى الطريقة القديمة
+                    document.execCommand('copy');
+                    alert(localStorage.getItem('language') === 'en' 
+                        ? 'Link copied to clipboard' 
+                        : 'تم نسخ الرابط إلى الحافظة');
+                }
             });
         });
     </script>
 </body>
 </html>
-
-// نسخ رابط المشاركة
-document.getElementById('copyLinkBtn').addEventListener('click', function() {
-    const shareLinkInput = document.getElementById('shareLink');
-    shareLinkInput.select();
-    
-    // استخدام Clipboard API الحديث إذا كان متاحاً
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(shareLinkInput.value)
-            .then(() => {
-                alert(localStorage.getItem('language') === 'en' 
-                    ? 'Link copied to clipboard' 
-                    : 'تم نسخ الرابط إلى الحافظة');
-            })
-            .catch(err => {
-                // Fallback إلى الطريقة القديمة
-                document.execCommand('copy');
-                alert(localStorage.getItem('language') === 'en' 
-                    ? 'Link copied to clipboard' 
-                    : 'تم نسخ الرابط إلى الحافظة');
-            });
-    } else {
-        // Fallback إلى الطريقة القديمة
-        document.execCommand('copy');
-        alert(localStorage.getItem('language') === 'en' 
-            ? 'Link copied to clipboard' 
-            : 'تم نسخ الرابط إلى الحافظة');
-    }
-});

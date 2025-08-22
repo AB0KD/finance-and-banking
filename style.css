@@ -32,10 +32,21 @@ body.light-mode header {
 body.light-mode .feature, 
 body.light-mode .file-item,
 body.light-mode .upload-form,
-body.light-mode .login-container {
+body.light-mode .login-container,
+body.light-mode .item-card {
     background-color: white;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     border-radius: 10px;
+}
+
+body.light-mode .file-item button.download,
+body.light-mode .upload-btn,
+body.light-mode .login-btn {
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+}
+
+body.light-mode .file-item button.delete {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
 }
 
 /* أنماط الوضع الداكن - تم التحسين */
@@ -52,10 +63,21 @@ body.dark-mode header {
 body.dark-mode .feature,
 body.dark-mode .file-item,
 body.dark-mode .upload-form,
-body.dark-mode .login-container {
+body.dark-mode .login-container,
+body.dark-mode .item-card {
     background-color: #1e1e1e;
     box-shadow: 0 4px 15px rgba(255,255,255,0.05);
     border: 1px solid #2d2d2d;
+}
+
+body.dark-mode .file-item button.download,
+body.dark-mode .upload-btn,
+body.dark-mode .login-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+body.dark-mode .file-item button.delete {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
 }
 
 body.dark-mode footer {
@@ -64,8 +86,7 @@ body.dark-mode footer {
 }
 
 body.dark-mode .form-group input,
-body.dark-mode .form-group select,
-body.dark-mode .form-group textarea {
+body.dark-mode .form-group select {
     background-color: #2d2d2d;
     color: #e0e0e0;
     border: 1px solid #3d3d3d;
@@ -225,6 +246,20 @@ body.dark-mode .file-item p {
     justify-content: center;
 }
 
+.file-item button {
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-item button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
 /* أنماط معرض الصور */
 .gallery-grid {
     display: grid;
@@ -269,6 +304,23 @@ body.dark-mode .file-item p {
     opacity: 1;
 }
 
+.gallery-item .image-actions button {
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.gallery-item .image-actions button.download {
+    background-color: #3498db;
+}
+
+.gallery-item .image-actions button.view {
+    background-color: #2ecc71;
+}
+
 /* أنماط التذييل */
 footer {
     background-color: #2c3e50;
@@ -294,7 +346,6 @@ footer {
     margin: 2rem auto;
     padding: 2rem;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .login-container h2 {
@@ -321,60 +372,9 @@ footer {
     font-size: 1rem;
 }
 
-/* أنماط الأزرار المحسنة */
-.btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-family: 'Cairo', sans-serif;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #2c3e50, #3498db);
-    color: white;
-}
-
-.btn-secondary {
-    background: linear-gradient(135deg, #9b59b6, #8e44ad);
-    color: white;
-}
-
-.btn-success {
-    background: linear-gradient(135deg, #27ae60, #219653);
-    color: white;
-}
-
-.btn-danger {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    color: white;
-}
-
-.btn-warning {
-    background: linear-gradient(135deg, #f39c12, #e67e22);
-    color: white;
-}
-
-.btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-}
-
 .login-btn {
     width: 100%;
     padding: 0.75rem;
-    background: linear-gradient(135deg, #2c3e50, #3498db);
     color: white;
     border: none;
     border-radius: 5px;
@@ -412,10 +412,18 @@ footer {
     border-radius: 5px;
 }
 
-body.dark-mode .upload-form input[type="file"] {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    border: 1px solid #3d3d3d;
+.upload-btn {
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 /* أنماط قائمة الملفات والصور في لوحة التحكم */
@@ -450,53 +458,51 @@ body.dark-mode .upload-form input[type="file"] {
     display: flex;
     gap: 10px;
     margin-top: auto;
-    padding-top: 10px;
 }
 
-/* تصميم جديد لزر إنشاء الرابط */
+.item-card button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    transition: all 0.3s;
+}
+
+.item-card button:hover {
+    transform: scale(1.05);
+}
+
+.item-card button.download {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+.item-card button.view {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.item-card button.delete {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+/* أنماط خاصة بروابط المشاركة */
 .share-link-container {
-    background: linear-gradient(135deg, #f1f2f6, #dfe4ea);
+    margin-top: 15px;
     padding: 15px;
     border-radius: 8px;
-    margin-top: 15px;
-    border-left: 4px solid #3498db;
+    background-color: #f8f9fa;
 }
 
 body.dark-mode .share-link-container {
-    background: linear-gradient(135deg, #2d3436, #636e72);
-    border-left: 4px solid #2980b9;
-}
-
-.share-link-container p {
-    margin-bottom: 8px;
-    font-weight: bold;
+    background-color: #2d2d2d;
 }
 
 .share-link-container input {
     width: 100%;
-    padding: 10px;
+    padding: 8px;
+    margin: 5px 0;
     border: 1px solid #ddd;
     border-radius: 4px;
-    margin-bottom: 10px;
-    background: white;
-    color: #2c3e50;
-}
-
-body.dark-mode .share-link-container input {
-    background: #2d2d2d;
-    color: #e0e0e0;
-    border: 1px solid #3d3d3d;
-}
-
-.no-items {
-    text-align: center;
-    padding: 2rem;
-    color: #666;
-    font-style: italic;
-}
-
-body.dark-mode .no-items {
-    color: #aaa;
 }
 
 /* التكيف مع الشاشات الصغيرة */
@@ -526,9 +532,5 @@ body.dark-mode .no-items {
     
     .items-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .item-card .item-actions {
-        flex-direction: column;
     }
 }

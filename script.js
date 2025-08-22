@@ -17,6 +17,13 @@ function checkShareToken() {
     }
 }
 
+// استدعاء الدالة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    checkShareToken();
+    
+    // ... الكود الحالي
+});
+
 // عناصر التحكم في الوضع الداكن والفاتح
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
@@ -73,7 +80,7 @@ async function changeLanguage(lang) {
         document.querySelectorAll('[data-key]').forEach(element => {
             const key = element.getAttribute('data-key');
             if (translations[key]) {
-                if (element.tagName === 'INPUT' && (element.type === 'button' || element.type === 'submit')) {
+                if (element.tagName === 'INPUT' && element.type === 'button') {
                     element.value = translations[key];
                 } else if (element.placeholder) {
                     element.placeholder = translations[key];
@@ -93,24 +100,14 @@ async function changeLanguage(lang) {
             document.documentElement.lang = 'en';
             document.querySelector('header .container').style.direction = 'ltr';
         }
-        
-        // تحديث رابط تسجيل الدخول/لوحة التحكم
-        updateLoginLink();
-        
-        // إعادة تحميل الملفات والصور بعد تغيير اللغة
-        setTimeout(() => {
-            displayFilesOnHomepage();
-            displayImagesOnHomepage();
-        }, 100);
     } catch (error) {
         console.error('Error loading language file:', error);
     }
 }
 
-// دالة تحديث رابط تسجيل الدخول/لوحة التحكم
-function updateLoginLink() {
+// محاكاة عملية تسجيل الدخول
+document.addEventListener('DOMContentLoaded', function() {
     const loginLink = document.getElementById('loginLink');
-    if (!loginLink) return;
     
     // التحقق من حالة تسجيل الدخول
     if (localStorage.getItem('isLoggedIn') === 'true') {
@@ -120,7 +117,11 @@ function updateLoginLink() {
         loginLink.textContent = localStorage.getItem('language') === 'en' ? 'Login' : 'تسجيل الدخول';
         loginLink.href = 'login.html';
     }
-}
+    
+    // عرض الملفات والصور عند تحميل الصفحة
+    displayFilesOnHomepage();
+    displayImagesOnHomepage();
+});
 
 // دالة مساعدة لتنسيق حجم الملف
 function formatFileSize(bytes) {
@@ -144,31 +145,26 @@ function displayFilesOnHomepage() {
     
     // إذا لم يكن هناك ملفات، عرض رسالة
     if (files.length === 0) {
-        const noFilesMsg = localStorage.getItem('language') === 'en' 
-            ? '<p class="no-items">No files available for download yet</p>' 
-            : '<p class="no-items">لا توجد ملفات متاحة للتحميل بعد</p>';
-        fileList.innerHTML = noFilesMsg;
+        fileList.innerHTML = '<p>لا توجد ملفات متاحة للتحميل بعد</p>';
         return;
     }
     
     // إضافة الملفات المخزنة
     files.forEach((file, index) => {
-        const downloadText = localStorage.getItem('language') === 'en' ? 'Download' : 'تحميل';
-        
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
         fileItem.innerHTML = `
             <h3>${file.name}</h3>
             <p>${file.type} - ${file.size}</p>
             <div class="file-actions">
-                <button class="download-btn" data-file-index="${index}">${downloadText}</button>
+                <button class="download" data-file-index="${index}">تحميل</button>
             </div>
         `;
         fileList.appendChild(fileItem);
     });
     
     // إضافة أحداث التحميل
-    document.querySelectorAll('.file-list .download-btn').forEach(button => {
+    document.querySelectorAll('.file-list .download').forEach(button => {
         button.addEventListener('click', function() {
             const index = this.getAttribute('data-file-index');
             const files = fileStorage.getFiles();
@@ -198,34 +194,22 @@ function displayImagesOnHomepage() {
         galleryGrid.innerHTML = '';
     }
     
-    // إذا لم يكن هناك صور، عرض رسالة
-    if (images.length === 0) {
-        const noImagesMsg = localStorage.getItem('language') === 'en' 
-            ? '<p class="no-items">No images available for viewing yet</p>' 
-            : '<p class="no-items">لا توجد صور متاحة للعرض بعد</p>';
-        galleryGrid.innerHTML = noImagesMsg;
-        return;
-    }
-    
     // إضافة الصور المخزنة
     images.forEach((image, index) => {
-        const downloadText = localStorage.getItem('language') === 'en' ? 'Download' : 'تحميل';
-        const viewText = localStorage.getItem('language') === 'en' ? 'View' : 'عرض';
-        
         const galleryItem = document.createElement('div');
         galleryItem.className = 'gallery-item';
         galleryItem.innerHTML = `
             <img src="${image.data}" alt="${image.name}">
             <div class="image-actions">
-                <button class="download-btn" data-image-index="${index}">${downloadText}</button>
-                <button class="view-btn" data-image-index="${index}">${viewText}</button>
+                <button class="download" data-image-index="${index}">تحميل</button>
+                <button class="view" data-image-index="${index}">عرض</button>
             </div>
         `;
         galleryGrid.appendChild(galleryItem);
     });
     
     // إضافة أحداث التحميل والعرض
-    document.querySelectorAll('.gallery-item .download-btn').forEach(button => {
+    document.querySelectorAll('.gallery-item .download').forEach(button => {
         button.addEventListener('click', function() {
             const index = this.getAttribute('data-image-index');
             const images = fileStorage.getImages();
@@ -241,7 +225,7 @@ function displayImagesOnHomepage() {
         });
     });
     
-    document.querySelectorAll('.gallery-item .view-btn').forEach(button => {
+    document.querySelectorAll('.gallery-item .view').forEach(button => {
         button.addEventListener('click', function() {
             const index = this.getAttribute('data-image-index');
             const images = fileStorage.getImages();
@@ -253,14 +237,32 @@ function displayImagesOnHomepage() {
     });
 }
 
+// تحديث العرض عند تغيير اللغة
+languageSelect.addEventListener('change', function() {
+    // إعادة تحميل الملفات والصور بعد تغيير اللغة
+    setTimeout(() => {
+        displayFilesOnHomepage();
+        displayImagesOnHomepage();
+    }, 100);
+});
+
+// دالة التحقق من رابط المشاركة في الصفحة الرئيسية
+function checkShareToken() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+        // حفظ التوكن في التخزين المحلي للاستخدام لاحقاً
+        localStorage.setItem('shareToken', token);
+        
+        // إخفاء التوكن من عنوان URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
 // استدعاء الدالة عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
     checkShareToken();
     
-    // تحديث رابط تسجيل الدخول/لوحة التحكم
-    updateLoginLink();
-    
-    // عرض الملفات والصور عند تحميل الصفحة
-    displayFilesOnHomepage();
-    displayImagesOnHomepage();
+    // ... الكود الحالي
 });

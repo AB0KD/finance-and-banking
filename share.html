@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشاركة المحتوى - طلاب العلوم المالية والمصرفية</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="light-mode">
+    <header>
+        <div class="container">
+            <h1 data-key="siteTitle">طلاب العلوم المالية والمصرفية</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html" data-key="home">الرئيسية</a></li>
+                    <li><a href="index.html#about" data-key="about">نبذة عنا</a></li>
+                    <li><a href="index.html#files" data-key="files">الملفات</a></li>
+                    <li><a href="index.html#gallery" data-key="gallery">معرض الصور</a></li>
+                </ul>
+            </nav>
+            <div class="controls">
+                <button id="themeToggle">☀️</button>
+                <select id="languageSelect">
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div id="shareContent">
+                <!-- سيتم عرض المحتوى هنا بعد التحقق من الرابط -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p data-key="footerText">© 2023 موقع طلاب العلوم المالية والمصرفية. جميع الحقوق محفوظة.</p>
+                <p>مؤسس الموقع: <span class="founder">عبدالله ضياء</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="storage.js"></script>
+    <script>
+        // دالة الحصول على روابط المشاركة
+        function getShareLinks() {
+            const links = localStorage.getItem('shareLinks');
+            return links ? JSON.parse(links) : [];
+        }
+
+        // دالة التحقق من صلاحية رابط المشاركة
+        function isValidShareLink(token) {
+            const links = getShareLinks();
+            const link = links.find(l => l.token === token);
+            
+            if (!link) return false;
+            
+            const now = new Date().getTime();
+            if (now > link.expiry) {
+                // حذف الرابط المنتهي الصلاحية
+                deleteShareLink(token);
+                return false;
+            }
+            
+            if (link.maxUses > 0 && link.usedCount >= link.maxUses) {
+                // حذف الرابط الذي تجاوز الحد الأقصى للاستخدام
+                deleteShareLink(token);
+                return false;
+            }
+            
+            // زيادة عدد مرات الاستخدام
+            link.usedCount++;
+            const updatedLinks = links.map(l => l.token === token ? link : l);
+            localStorage.setItem('shareLinks', JSON.stringify(updatedLinks));
+            
+            return true;
+        }
+
+        // دالة حذف رابط المشاركة
+        function deleteShareLink(token) {
+            let links = getShareLinks();
+            links = links.filter(link => link.token !== token);
+            localStorage.setItem('shareLinks', JSON.stringify(links));
+            return links;
+        }
+
+        // دالة مساعدة لتنسيق حجم الملف
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // دالة لعرض المحتوى للمشاركة
+        function displaySharedContent() {
+            const shareContent = document.getElementById('shareContent');
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            // التحقق من صلاحية الرابط
+            if (!token || !isValidShareLink(token)) {
+                shareContent.innerHTML = `
+                    <div class="login-container">
+                        <h2>رابط المشاركة غير صالح</h2>
+                        <p>رابط المشاركة هذا غير صالح أو منتهي الصلاحية.</p>
+                        <a href="index.html" class="login-btn">العودة إلى الصفحة الرئيسية</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            // عرض المحتوى المشترك
+            const files = fileStorage.getFiles();
+            const images = fileStorage.getImages();
+            
+            let contentHTML = `
+                <h2>محتوى مشترك معك</h2>
+                <p>يمكنك تصفح وتحميل الملفات والصور المتاحة:</p>
+            `;
+            
+            if (files.length > 0) {
+                contentHTML += `
+                    <div class="uploaded-items">
+                        <h3>الملفات المتاحة</h3>
+                        <div class="items-grid">
+                `;
+                
+                files.forEach((file, index) => {
+                    contentHTML += `
+                        <div class="item-card">
+                            <div class="item-name">${file.name}</div>
+                            <div class="item-size">${file.size} - ${file.type}</div>
+                            <div class="item-actions">
+                                <button class="download" data-file-index="${index}">تحميل</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                contentHTML += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (images.length > 0) {
+                contentHTML += `
+                    <div class="uploaded-items">
+                        <h3>الصور المتاحة</h3>
+                        <div class="items-grid">
+                `;
+                
+                images.forEach((image, index) => {
+                    contentHTML += `
+                        <div class="item-card">
+                            <div class="item-name">${image.name}</div>
+                            <div class="item-size">${image.size}</div>
+                            <div class="item-preview">
+                                <img src="${image.data}" alt="${image.name}" style="max-width: 100%; max-height: 100px; margin-top: 10px;">
+                            </div>
+                            <div class="item-actions">
+                                <button class="download" data-image-index="${index}">تحميل</button>
+                                <button class="view" data-image-index="${index}">عرض</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                contentHTML += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (files.length === 0 && images.length === 0) {
+                contentHTML += `
+                    <div class="login-container">
+                        <p>لا يوجد محتوى متاح للعرض حالياً.</p>
+                        <a href="index.html" class="login-btn">العودة إلى الصفحة الرئيسية</a>
+                    </div>
+                `;
+            }
+            
+            shareContent.innerHTML = contentHTML;
+            
+            // إضافة أحداث التحميل والعرض
+            document.querySelectorAll('.download[data-file-index]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.getAttribute('data-file-index');
+                    const files = fileStorage.getFiles();
+                    const file = files[index];
+                    
+                    // إنشاء رابط تحميل
+                    const link = document.createElement('a');
+                    link.href = file.data;
+                    link.download = file.name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            });
+            
+            document.querySelectorAll('.download[data-image-index]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.getAttribute('data-image-index');
+                    const images = fileStorage.getImages();
+                    const image = images[index];
+                    
+                    // إنشاء رابط تحميل
+                    const link = document.createElement('a');
+                    link.href = image.data;
+                    link.download = image.name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            });
+            
+            document.querySelectorAll('.view[data-image-index]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.getAttribute('data-image-index');
+                    const images = fileStorage.getImages();
+                    const image = images[index];
+                    
+                    // فتح الصورة في نافذة جديدة
+                    window.open(image.data, '_blank');
+                });
+            });
+        }
+
+        // دالة تغيير اللغة
+        async function changeLanguage(lang) {
+            try {
+                const response = await fetch(`languages/${lang}.json`);
+                const translations = await response.json();
+                
+                // تطبيق الترجمات على جميع العناصر
+                document.querySelectorAll('[data-key]').forEach(element => {
+                    const key = element.getAttribute('data-key');
+                    if (translations[key]) {
+                        if (element.tagName === 'INPUT' && element.type === 'button') {
+                            element.value = translations[key];
+                        } else if (element.placeholder) {
+                            element.placeholder = translations[key];
+                        } else {
+                            element.textContent = translations[key];
+                        }
+                    }
+                });
+                
+                // تغيير اتجاه الصفحة
+                if (lang === 'ar') {
+                    document.documentElement.dir = 'rtl';
+                    document.documentElement.lang = 'ar';
+                    document.querySelector('header .container').style.direction = 'rtl';
+                } else {
+                    document.documentElement.dir = 'ltr';
+                    document.documentElement.lang = 'en';
+                    document.querySelector('header .container').style.direction = 'ltr';
+                }
+            } catch (error) {
+                console.error('Error loading language file:', error);
+            }
+        }
+
+        // تحميل إعدادات المظهر واللغة
+        document.addEventListener('DOMContentLoaded', function() {
+            // عرض المحتوى المشترك
+            displaySharedContent();
+            
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            
+            // التحقق من التفضيل المحفوظ
+            if (localStorage.getItem('theme') === 'dark') {
+                body.classList.add('dark-mode');
+                body.classList.remove('light-mode');
+                themeToggle.textContent = '🌙';
+            } else {
+                body.classList.add('light-mode');
+                body.classList.remove('dark-mode');
+                themeToggle.textContent = '☀️';
+            }
+            
+            // تبديل الوضع الداكن/الفاتح
+            themeToggle.addEventListener('click', () => {
+                if (body.classList.contains('light-mode')) {
+                    body.classList.replace('light-mode', 'dark-mode');
+                    themeToggle.textContent = '🌙';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    body.classList.replace('dark-mode', 'light-mode');
+                    themeToggle.textContent = '☀️';
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+            
+            // تغيير اللغة
+            const languageSelect = document.getElementById('languageSelect');
+            
+            // التحقق من اللغة المحفوظة
+            if (localStorage.getItem('language') === 'en') {
+                languageSelect.value = 'en';
+                changeLanguage('en');
+            } else {
+                languageSelect.value = 'ar';
+                changeLanguage('ar');
+            }
+            
+            // تغيير اللغة عند التحديد
+            languageSelect.addEventListener('change', (e) => {
+                changeLanguage(e.target.value);
+                localStorage.setItem('language', e.target.value);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-key="loginTitle">تسجيل الدخول - طلاب العلوم المالية والمصرفية</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="light-mode">
+    <header>
+        <div class="container">
+            <h1 data-key="siteTitle">طلاب العلوم المالية والمصرفية</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html" data-key="home">الرئيسية</a></li>
+                    <li><a href="index.html#about" data-key="about">نبذة عنا</a></li>
+                    <li><a href="index.html#files" data-key="files">الملفات</a></li>
+                    <li><a href="index.html#gallery" data-key="gallery">معرض الصور</a></li>
+                </ul>
+            </nav>
+            <div class="controls">
+                <button id="themeToggle">☀️</button>
+                <select id="languageSelect">
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="login-container">
+                <h2 data-key="loginTitle">تسجيل الدخول</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username" data-key="username">اسم المستخدم</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password" data-key="password">كلمة المرور</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="login-btn" data-key="loginButton">تسجيل الدخول</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p data-key="footerText">© 2023 موقع طلاب العلوم المالية والمصرفية. جميع الحقوق محفوظة.</p>
+                <p>مؤسس الموقع: <span class="founder">عبدالله ضياء</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="storage.js"></script>
+    <script>
+        // معالجة تسجيل الدخول
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // التحقق من بيانات الدخول
+            if (username === 'ab0kd' && password === 'abodedode2003') {
+                // حفظ حالة تسجيل الدخول
+                localStorage.setItem('isLoggedIn', 'true');
+                
+                // توجيه إلى لوحة التحكم
+                window.location.href = 'dashboard.html';
+            } else {
+                // التحقق من رابط المشاركة
+                const shareToken = localStorage.getItem('shareToken');
+                if (shareToken && isValidShareLink(shareToken)) {
+                    // توجيه إلى صفحة المشاركة
+                    window.location.href = `share.html?token=${shareToken}`;
+                } else {
+                    alert(localStorage.getItem('language') === 'en' 
+                        ? 'Username or password is incorrect' 
+                        : 'اسم المستخدم أو كلمة المرور غير صحيحة');
+                }
+            }
+        });
+
+        // تحميل إعدادات المظهر واللغة
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            
+            // التحقق من التفضيل المحفوظ
+            if (localStorage.getItem('theme') === 'dark') {
+                body.classList.add('dark-mode');
+                body.classList.remove('light-mode');
+                themeToggle.textContent = '🌙';
+            } else {
+                body.classList.add('light-mode');
+                body.classList.remove('dark-mode');
+                themeToggle.textContent = '☀️';
+            }
+            
+            // تبديل الوضع الداكن/الفاتح
+            themeToggle.addEventListener('click', () => {
+                if (body.classList.contains('light-mode')) {
+                    body.classList.replace('light-mode', 'dark-mode');
+                    themeToggle.textContent = '🌙';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    body.classList.replace('dark-mode', 'light-mode');
+                    themeToggle.textContent = '☀️';
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+            
+            // تغيير اللغة
+            const languageSelect = document.getElementById('languageSelect');
+            
+            // التحقق من اللغة المحفوظة
+            if (localStorage.getItem('language') === 'en') {
+                languageSelect.value = 'en';
+                changeLanguage('en');
+            } else {
+                languageSelect.value = 'ar';
+                changeLanguage('ar');
+            }
+            
+            // تغيير اللغة عند التحديد
+            languageSelect.addEventListener('change', (e) => {
+                changeLanguage(e.target.value);
+                localStorage.setItem('language', e.target.value);
+            });
+            
+            // دالة تغيير اللغة
+            async function changeLanguage(lang) {
+                try {
+                    const response = await fetch(`languages/${lang}.json`);
+                    const translations = await response.json();
+                    
+                    // تطبيق الترجمات على جميع العناصر
+                    document.querySelectorAll('[data-key]').forEach(element => {
+                        const key = element.getAttribute('data-key');
+                        if (translations[key]) {
+                            if (element.tagName === 'INPUT' && element.type === 'button') {
+                                element.value = translations[key];
+                            } else if (element.placeholder) {
+                                element.placeholder = translations[key];
+                            } else {
+                                element.textContent = translations[key];
+                            }
+                        }
+                    });
+                    
+                    // تغيير اتجاه الصفحة
+                    if (lang === 'ar') {
+                        document.documentElement.dir = 'rtl';
+                        document.documentElement.lang = 'ar';
+                        document.querySelector('header .container').style.direction = 'rtl';
+                    } else {
+                        document.documentElement.dir = 'ltr';
+                        document.documentElement.lang = 'en';
+                        document.querySelector('header .container').style.direction = 'ltr';
+                    }
+                } catch (error) {
+                    console.error('Error loading language file:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
